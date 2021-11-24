@@ -8,11 +8,12 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 public class UDPHelper {
     DatagramSocket socket;
 
-    public UDPHelper(DatagramSocket socket) throws SocketException {
+    public UDPHelper(DatagramSocket socket) {
         this.socket = socket;
     }
 
@@ -26,23 +27,33 @@ public class UDPHelper {
         int messageTypeLength;
         int messageContentLength;
         byte[] messageTypeLengthBytes = new byte[4];
-        byte[] packetSizeBytes = new byte[4];
-        byte[] messageTypeBytes;
-        byte[] messageContentBytes;
+        byte[] messageContentLengthBytes = new byte[4];
+        String messageType;
+        String messageContent;
 
         // define segment location
-        int messageTypeSegmentLoc = 0;
-        int messageContentLengthBytes;
-        System.arraycopy(packetData, 0, messageTypeLengthBytes, 0, 4);
+        int messageTypeLoc = 0;
+        int messageContentLoc;
+
+        // extract messageType
+        System.arraycopy(packetData, messageTypeLoc, messageTypeLengthBytes, 0, 4);
         messageTypeLength = ByteBuffer.wrap(messageTypeLengthBytes).getInt();
-        messageContentLengthBytes = 4 + messageTypeLength;
-        ByteBuffer.wrap(messageContentLengthBytes).getInt();
-        messageContentBytes = new byte[]
-        System.arraycopy(packetData, messageContentLengthBytes, messageContentBytes, 0, 4);
+        byte[] messageTypeBytes = new byte[messageTypeLength];
+        System.arraycopy(packetData, messageTypeLoc + 4, messageTypeBytes, 0, messageTypeLength);
+        messageType = Arrays.toString(messageTypeBytes);
 
+        messageContentLoc = 4 + messageTypeLength;
 
-        messageData.type = "";
-        messageData.message = new String(packetData, 0, packet.getLength());
+        // extract messageContent
+        System.arraycopy(packetData, messageContentLoc, messageContentLengthBytes, 0, 4);
+        messageContentLength = ByteBuffer.wrap(messageContentLengthBytes).getInt();
+        byte[] messageContentBytes = new byte[messageContentLength];
+        System.arraycopy(packetData, messageContentLoc + 4, messageContentBytes, 0, messageContentLength);
+        messageContent = Arrays.toString(messageContentBytes);
+
+        // prepare payload
+        messageData.type = messageType;
+        messageData.message = messageContent;
         messageData.sourceIPAddress = packet.getAddress().toString();
         messageData.sourcePort = packet.getPort();
 
@@ -70,7 +81,7 @@ public class UDPHelper {
 
         // create DatagramPacket
         DatagramPacket packet =
-                new DatagramPacket(messageContent.getBytes(), messageContent.length(), destination, destPort);
+                new DatagramPacket(packetContent, packetContent.length, destination, destPort);
 
         socket.send(packet);
     }
