@@ -1,4 +1,4 @@
-package painter;
+package window;
 
 import model.ClientData;
 
@@ -167,23 +167,17 @@ public class UI extends JFrame {
 		toolPanel.add(tglBucket);
 		
 		// change the paint mode to PIXEL mode
-		tglPen.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				tglPen.setSelected(true);
-				tglBucket.setSelected(false);
-				paintMode = PaintMode.Pixel;
-			}
+		tglPen.addActionListener(arg0 -> {
+			tglPen.setSelected(true);
+			tglBucket.setSelected(false);
+			paintMode = PaintMode.Pixel;
 		});
 		
 		// change the paint mode to AREA mode
-		tglBucket.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				tglPen.setSelected(false);
-				tglBucket.setSelected(true);
-				paintMode = PaintMode.Area;
-			}
+		tglBucket.addActionListener(arg0 -> {
+			tglPen.setSelected(false);
+			tglBucket.setSelected(true);
+			paintMode = PaintMode.Area;
 		});
 		
 		JPanel msgPanel = new JPanel();
@@ -259,12 +253,12 @@ public class UI extends JFrame {
 	 * @return a list of modified pixels
 	 */
 	public List paintArea(int col, int row) {
-		LinkedList<Point> filledPixels = new LinkedList<Point>();
+		LinkedList<Point> filledPixels = new LinkedList<>();
 
 		if (col >= data.length || row >= data[0].length) return filledPixels;
 
 		int oriColor = data[col][row];
-		LinkedList<Point> buffer = new LinkedList<Point>();
+		LinkedList<Point> buffer = new LinkedList<>();
 		
 		if (oriColor != selectedColor) {
 			buffer.add(new Point(col, row));
@@ -291,8 +285,6 @@ public class UI extends JFrame {
 	
 	/**
 	 * set pixel data and block size
-	 * @param data
-	 * @param blockSize
 	 */
 	public void setData(int[][] data, int blockSize) {
 		this.data = data;

@@ -1,4 +1,4 @@
-package painter;
+package window;
 
 import javax.imageio.ImageIO;
 import javax.swing.JDialog;
@@ -20,8 +20,6 @@ public class ColorPicker extends JDialog {
 	
 	/**
 	 * get instance of painter.ColorPicker. Singleton design pattern.
-	 * @param parent
-	 * @return
 	 */
 	public static ColorPicker getInstance(JFrame parent) {
 		if (instance == null)
@@ -31,7 +29,6 @@ public class ColorPicker extends JDialog {
 	
 	/**
 	 * private constructor. To create an instance of painter.ColorPicker, call getInstance() instead.
-	 * @param parent
 	 */
 	private ColorPicker(JFrame parent) {
 		super(parent, "Color Picker", true);
@@ -73,7 +70,7 @@ public class ColorPicker extends JDialog {
 				try {
 					selectedColor = colorImage.getRGB(e.getX(), e.getY());
 					UI.getInstance().selectColor(selectedColor);
-				} catch (IndexOutOfBoundsException ex) { }
+				} catch (IndexOutOfBoundsException ignored) { }
 			}
 		});
 		

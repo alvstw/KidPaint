@@ -1,5 +1,5 @@
 import model.ClientData;
-import painter.UI;
+import window.UI;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
