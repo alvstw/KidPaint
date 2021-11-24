@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="RemoteTargetsManager">
+    <targets>
+      <target name="dev@svct-app520.alvcs:21341" type="ssh/sftp">
+        <config>
+          <option name="projectRootOnTarget" value="/home/dev/javaProject/KidPaint" />
+          <option name="serverName" value="dev@svct-app520.alvcs:21341 agent" />
+          <option name="useRsync" value="true" />
+        </config>
+        <ContributedStateBase type="JavaLanguageRuntime">
+          <config>
+            <option name="javaVersionString" value="11.0.12" />
+          </config>
+        </ContributedStateBase>
+      </target>
+    </targets>
+  </component>
+</project>

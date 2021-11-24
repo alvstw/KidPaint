@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="aa1b89d5-b7d8-4ff5-938b-e30c1f887165" name="dev@svct-app520">
+        <fileTransfer rootFolder="/home/dev/javaProject" accessType="SFTP" host="svct-app520.alvcs" port="21341" sshConfigId="f37c5a5a-39a9-4167-8ed2-2ba5a6926b95" sshConfig="dev@svct-app520.alvcs:21341 agent" authAgent="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
