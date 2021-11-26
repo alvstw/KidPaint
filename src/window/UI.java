@@ -1,11 +1,17 @@
 package window;
 
-import model.ClientData;
+import model.PaintBoard;
+import model.UserProfile;
+import model.client.ClientData;
+import model.constant.Constant;
+import model.constant.MessageType;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.*;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -18,12 +24,15 @@ public class UI extends JFrame {
 	private JPanel paintPanel;
 	private JToggleButton tglPen;
 	private JToggleButton tglBucket;
+	private JToggleButton tglClear;
+	private JToggleButton tglImport;
+	private JToggleButton tglExport;
 
 	private static UI instance;
 	private int selectedColor = -543230; 	// golden
 	
 	int[][] data = new int[50][50];			// pixel color data array
-	int blockSize = 16;
+	int blockSize = Constant.blockSize;
 	PaintMode paintMode = PaintMode.Pixel;
 
 
@@ -146,6 +155,15 @@ public class UI extends JFrame {
 		
 		tglBucket = new JToggleButton("Bucket");
 		toolPanel.add(tglBucket);
+
+		tglClear = new JToggleButton("Clear");
+		toolPanel.add(tglClear);
+
+		tglImport = new JToggleButton("Import");
+		toolPanel.add(tglImport);
+
+		tglExport = new JToggleButton("Export");
+		toolPanel.add(tglExport);
 		
 		// change the paint mode to PIXEL mode
 		tglPen.addActionListener(arg0 -> {
@@ -160,7 +178,63 @@ public class UI extends JFrame {
 			tglBucket.setSelected(true);
 			paintMode = PaintMode.Area;
 		});
-		
+
+		// clear the PaintBoard
+		tglClear.addActionListener(arg0 -> {
+			clearPaintBoard();
+			ClientData.clientMessageService.sendMessage(MessageType.CLEAR_PAINT_BOARD.toString(), "");
+		});
+
+		// import the PaintBoard
+		tglImport.addActionListener(arg0 -> {
+			FileDialog dialog = new FileDialog(new Frame(), "Select File to Open", FileDialog.LOAD);
+			dialog.setFilenameFilter((dir, name) -> name.endsWith(".pboard"));
+			dialog.setVisible(true);
+			System.out.println(dialog.getFile() + " chosen.");
+			try {
+				FileInputStream fileInputStream = new FileInputStream(dialog.getDirectory() + Constant.fileSeparator + dialog.getFile());
+				ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+				PaintBoard paintBoard = (PaintBoard) objectInputStream.readObject();
+				clearPaintBoard();
+				ClientData.clientMessageService.sendMessage(MessageType.CLEAR_PAINT_BOARD.toString(), "");
+				setData(paintBoard.getData(), Constant.blockSize);
+				ClientData.clientMessageService.sendPaintBoard(paintBoard);
+			} catch (IOException | ClassNotFoundException e) {
+				System.out.println("Unable to read PaintBoard file.");
+			}
+		});
+
+		// export the PaintBoard
+		tglExport.addActionListener(arg0 -> {
+			FileDialog dialog = new FileDialog(new Frame(), "Select location to save", FileDialog.SAVE);
+			dialog.setFilenameFilter((dir, name) -> name.endsWith(".pboard"));
+			dialog.setFile("KidPaint-PaintBoard-export.pboard");
+			dialog.setVisible(true);
+			System.out.println(dialog.getFile() + " chosen.");
+			File file = new File(dialog.getDirectory(), dialog.getFile());
+			try {
+				if (file.createNewFile()) {
+					System.out.println("File created: " + file.getName());
+				} else {
+					System.out.println("File will be overwritten.");
+				}
+			} catch (IOException e) {
+				System.out.println("Exception occurred during file creation.");
+			}
+
+			PaintBoard paintBoard = new PaintBoard();
+			paintBoard.setData(data);
+			try {
+				FileOutputStream fileOutputStream = new FileOutputStream(file.getAbsolutePath());
+				ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+				objectOutputStream.writeObject(paintBoard);
+				objectOutputStream.close();
+				System.out.println("Successfully exported the PaintBoard.");
+			} catch (IOException e) {
+				System.out.println("Exception occurred while writing the file.");
+			}
+		});
+
 		JPanel msgPanel = new JPanel();
 		
 		getContentPane().add(msgPanel, BorderLayout.EAST);
@@ -211,10 +285,34 @@ public class UI extends JFrame {
 		 
 	/**
 	 * it will be invoked if the user inputted text in the message field
-	 * @param text - user inputted text
+	* @param message - message content
 	 */
-	private void onTextInputted(String text) {
-		chatArea.setText(chatArea.getText() + text + "\n");
+	private void onTextInputted(String message) {
+		if (message.equalsIgnoreCase("/ls")) {
+			ClientData.clientMessageService.sendMessage(MessageType.REQUEST_CLIENT_LIST.toString());
+			return;
+		}
+		addChatMessage(ClientData.username, message);
+		ClientData.clientMessageService.sendChatMessage(message);
+	}
+
+	/**
+	 * it will be invoked if the user inputted text in the message field
+	 * @param senderName - sender name
+	 * @param message - message content
+	 */
+	public void addChatMessage(String senderName, String message) {
+		String messageLine = String.format("%s: %s\n", senderName, message);
+		chatArea.setText(chatArea.getText() + messageLine);
+	}
+
+	/**
+	 * it will be invoked if the user inputted text in the message field
+	 * @param message - message content
+	 */
+	public void addChatMessage(String message) {
+		String messageLine = String.format("%s\n", message);
+		chatArea.setText(chatArea.getText() + messageLine);
 	}
 	
 	/**
@@ -222,9 +320,18 @@ public class UI extends JFrame {
 	 * @param col, row - the position of the selected pixel
 	 */
 	public void paintPixel(int col, int row) {
+		setPixel(col, row, selectedColor);
+		ClientData.clientMessageService.sendPaintData(col, row, selectedColor);
+	}
+
+	/**
+	 * change the color of a specific pixel
+	 * @param col, row, color - the position of the selected pixel
+	 */
+	public void setPixel(int col, int row, int color) {
 		if (col >= data.length || row >= data[0].length) return;
-		
-		data[col][row] = selectedColor;
+
+		data[col][row] = color;
 		paintPanel.repaint(col * blockSize, row * blockSize, blockSize, blockSize);
 	}
 	
@@ -235,7 +342,6 @@ public class UI extends JFrame {
 	 */
 	public List paintArea(int col, int row) {
 		LinkedList<Point> filledPixels = new LinkedList<>();
-
 		if (col >= data.length || row >= data[0].length) return filledPixels;
 
 		int oriColor = data[col][row];
@@ -253,6 +359,7 @@ public class UI extends JFrame {
 				
 				data[x][y] = selectedColor;
 				filledPixels.add(p);
+				ClientData.clientMessageService.sendPaintData(x, y, selectedColor);
 	
 				if (x > 0 && data[x-1][y] == oriColor) buffer.add(new Point(x-1, y));
 				if (x < data.length - 1 && data[x+1][y] == oriColor) buffer.add(new Point(x+1, y));
@@ -272,5 +379,25 @@ public class UI extends JFrame {
 		this.blockSize = blockSize;
 		paintPanel.setPreferredSize(new Dimension(data.length * blockSize, data[0].length * blockSize));
 		paintPanel.repaint();
+	}
+
+	public void printOnlineUsers() {
+		int userCount = 0;
+		StringBuilder stringBuilder = new StringBuilder();
+		for (UserProfile user : ClientData.connectedUsers) {
+			if (userCount != 0) stringBuilder.append(" ,");
+			stringBuilder.append(user.username);
+			userCount++;
+		}
+		String userListString = stringBuilder.toString();
+		if (userCount == 1) {
+			addChatMessage("No one else online yet");
+			return;
+		}
+		addChatMessage(String.format("%d online users: %s", userCount, userListString));
+	}
+
+	public void clearPaintBoard() {
+		setData(new int[50][50], Constant.blockSize);
 	}
 }

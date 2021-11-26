@@ -22,7 +22,7 @@ public class TCPHelper {
         try {
             if ((receivedObject = in.readObject()) == null) return null;
             Message message = (Message) receivedObject;
-            System.out.printf("Receiving message: %s: %s\n", message.type, message.message);
+            System.out.printf("Receiving message from %s(%s): %s: %s\n", message.senderID, message.senderName, message.type, message.message);
             return message;
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
@@ -41,7 +41,7 @@ public class TCPHelper {
 
         try {
             out.writeObject(message);
-            System.out.printf("Sending message from %s(%s) at %s: %s: %s\n", message.senderID, message.senderName, message.createdAt, message.type, message.message);
+            System.out.printf("Sending message to %s %s: %s\n", socket.getInetAddress().getHostAddress(), message.type, message.message);
         } catch (IOException e) {
             e.printStackTrace();
         }

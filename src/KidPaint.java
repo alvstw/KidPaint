@@ -1,5 +1,7 @@
-import model.ClientData;
-import service.ClientService;
+import model.client.ClientData;
+import model.constant.MessageType;
+import service.client.ClientMessageService;
+import service.client.ClientService;
 import window.UI;
 
 import java.awt.event.ActionEvent;
@@ -14,6 +16,8 @@ public class KidPaint extends JFrame implements ActionListener {
 
     public static void main(String[] args) throws IOException {
         clientService = new ClientService();
+        ClientData.clientService = clientService;
+
         new KidPaint();
     }
 
@@ -57,6 +61,7 @@ public class KidPaint extends JFrame implements ActionListener {
 
     public void startPaintBoard() {
 		UI ui = UI.getInstance();            // get the instance of painter.UI
+        ClientData.ui = ui;
 		ui.setData(new int[50][50], 20);    // set the data array and block size. comment this statement to use the default data array and block size.
 		ui.setVisible(true);
 	}
@@ -66,10 +71,10 @@ public class KidPaint extends JFrame implements ActionListener {
         String s = e.getActionCommand();
         if (s.equals("Submit")) {
             // set the text of the label to the text of the field
-            ClientData.username = this.usernameField.getText();
+            clientService.setUsername(this.usernameField.getText());
 
             /* to-do: Fix the bug where user aren't allowed to start the painter after retry */
-            if (ClientData.username.equals("")){
+            if (clientService.getUsername().equals("")){
             	this.setupClient();
             	return;
 			}
@@ -87,6 +92,13 @@ public class KidPaint extends JFrame implements ActionListener {
 
             // Open paint board
             this.startPaintBoard();
+
+            // Print welcome message
+            ClientMessageService clientMessageService = clientService.getClientMessageService();
+            ClientData.ui.addChatMessage(String.format("Welcome %s!\nYou can chat here with others.\nType /ls to see who else is online.", clientService.getUsername()));
+
+            // Request PaintBoard
+            clientService.getClientMessageService().requestPaintBoard();
         }
     }
 

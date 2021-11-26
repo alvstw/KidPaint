@@ -8,5 +8,8 @@ public class Constant {
     public static final String serverID = "28c6332d-8604-4c9d-9202-69a002c9b55b";
     public static final String serverName = "Server";
 
-    public static String consoleSeparator = new String(new char[10]).replace("\0", "-");
+    public static final int blockSize = 16;
+
+    public static final String consoleSeparator = new String(new char[10]).replace("\0", "-");
+    public static final String fileSeparator = System.getProperty("file.separator");
 }

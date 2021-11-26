@@ -1,6 +1,7 @@
 import model.constant.MessageType;
 import model.message.Message;
-import service.ClientService;
+import service.client.ClientMessageService;
+import service.client.ClientService;
 
 import java.io.IOException;
 
@@ -26,9 +27,10 @@ public class Test {
 
     public static void testSendChatMessage() throws IOException, InterruptedException {
         ClientService clientService = new ClientService();
+        ClientMessageService clientMessageService = new ClientMessageService(clientService.getSocket());
         clientService.setUsername("Paul");
         clientService.findServer();
-        clientService.sendChatMessage("test");
+//        clientMessageService.sendChatMessage("test");
     }
 
     public static void testMessageConvert() {

@@ -1,4 +1,4 @@
-package service.thread;
+package service.server;
 
 import helper.UDPHelper;
 import model.message.Message;
@@ -22,7 +22,7 @@ public class BroadcastServerThread extends Thread {
             System.out.printf("Receiving package from %s:%s\n", message.sourceIPAddress, message.sourcePort);
             System.out.printf("Message Type: %s\n", message.type);
             System.out.printf("Message Content: %s\n", message.message);
-            if (message.message.equals(MessageType.FIND_SERVER_BROADCAST.toString())) {
+            if (message.type.equals(MessageType.FIND_SERVER_BROADCAST.toString())) {
                 System.out.printf("Responding to client %s:%s\n", message.sourceIPAddress, message.sourcePort);
                 udpHelper.sendMessage(MessageType.SERVER_BROADCAST_RESPONSE.toString(), "", message.sourceIPAddress, message.sourcePort);
             }

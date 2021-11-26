@@ -1,6 +1,6 @@
 import model.constant.Constant;
-import service.ServerService;
-import service.thread.BroadcastServerThread;
+import service.server.ClientManager;
+import service.server.BroadcastServerThread;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -9,7 +9,6 @@ import java.net.Socket;
 public class PaintServer {
 
     public static void main(String[] args) throws IOException {
-        ServerService service = new ServerService();
         ServerSocket serverSocket = new ServerSocket(Constant.serverTCPPort);
 
         // Accept UDP broadcast signal
@@ -20,7 +19,7 @@ public class PaintServer {
         while (true) {
             try {
                 Socket socket = serverSocket.accept();
-                service.addClient(socket);
+                ClientManager.addClient(socket);
             } catch (IOException e) {
                 System.out.println("I/O error: " + e);
             }

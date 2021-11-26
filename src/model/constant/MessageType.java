@@ -8,6 +8,11 @@ public enum MessageType {
     SET_CLIENT_ID,
 
     PAINT_DATA,
+    PAINT_BOARD,
     CHAT_MESSAGE,
-    IMPORT_PAINT,
+    CLIENT_LIST,
+
+    REQUEST_PAINT_BOARD,
+    CLEAR_PAINT_BOARD,
+    REQUEST_CLIENT_LIST,
 }
