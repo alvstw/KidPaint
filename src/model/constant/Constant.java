@@ -12,4 +12,6 @@ public class Constant {
 
     public static final String consoleSeparator = new String(new char[10]).replace("\0", "-");
     public static final String fileSeparator = System.getProperty("file.separator");
+
+    public static final String defaultStudioName = "Default Studio";
 }

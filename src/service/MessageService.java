@@ -3,13 +3,10 @@ package service;
 import helper.TCPHelper;
 import model.PaintBoard;
 import model.PaintData;
-import model.client.ClientData;
 import model.constant.MessageType;
 import model.message.Message;
 
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Arrays;
 
 public abstract class MessageService {
     protected Socket socket;
@@ -50,14 +47,14 @@ public abstract class MessageService {
     public void sendPaintData(int col, int row, int color) {
         if (socket.isClosed()) return;
 
+        System.out.printf("Sending PaintData %d,%d (%d)\n", col, row, color);
         sendObject(MessageType.PAINT_DATA.toString(), new PaintData(col, row, color));
-        System.out.printf("Sent PaintData %d,%d (%d)\n", col, row, color);
     }
 
     public void sendPaintBoard(PaintBoard paintBoard) {
         if (socket.isClosed()) return;
+        System.out.println("Sending PaintBoard");
         sendObject(MessageType.PAINT_BOARD.toString(), paintBoard);
-        System.out.println("Sent PaintBoard");
     }
 
     public void sendObject(String type, Object object) {

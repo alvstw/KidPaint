@@ -1,13 +1,20 @@
+import helper.TCPHelper;
+import model.Studio;
 import model.client.ClientData;
 import model.constant.MessageType;
+import model.message.Message;
 import service.client.ClientMessageService;
 import service.client.ClientService;
+import window.StudioPicker;
 import window.UI;
+import window.WindowManager;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.*;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.*;
 
 public class KidPaint extends JFrame implements ActionListener {
@@ -59,12 +66,7 @@ public class KidPaint extends JFrame implements ActionListener {
         System.out.println(this.usernameField.getText());
     }
 
-    public void startPaintBoard() {
-		UI ui = UI.getInstance();            // get the instance of painter.UI
-        ClientData.ui = ui;
-		ui.setData(new int[50][50], 20);    // set the data array and block size. comment this statement to use the default data array and block size.
-		ui.setVisible(true);
-	}
+
 
 	// painter.UI action listener
     public void actionPerformed(ActionEvent e) {
@@ -90,15 +92,22 @@ public class KidPaint extends JFrame implements ActionListener {
                 ex.printStackTrace();
             }
 
+            // Get studio list
+            ClientData.clientMessageService.sendMessage(MessageType.REQUEST_STUDIO_LIST.toString());
+
+            // Wait studio list
+            while (ClientData.studios == null) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
+            }
+
+            ClientData.ui = UI.getInstance();
+
             // Open paint board
-            this.startPaintBoard();
-
-            // Print welcome message
-            ClientMessageService clientMessageService = clientService.getClientMessageService();
-            ClientData.ui.addChatMessage(String.format("Welcome %s!\nYou can chat here with others.\nType /ls to see who else is online.", clientService.getUsername()));
-
-            // Request PaintBoard
-            clientService.getClientMessageService().requestPaintBoard();
+            WindowManager.openStudioPicker();
         }
     }
 
