@@ -3,6 +3,7 @@ package service.server;
 import helper.TCPHelper;
 import model.PaintBoard;
 import model.PaintData;
+import model.Studio;
 import model.constant.MessageType;
 import model.message.Message;
 import model.server.ServerData;
@@ -43,12 +44,13 @@ public class ServerThread extends Thread {
             }
 
             if (message.type.equals(MessageType.REQUEST_PAINT_BOARD.toString())) {
-                serverMessageService.sendPaintBoard(ServerData.paintBoard);
+                serverMessageService.sendPaintBoard(getStudio().getPaintBoard());
                 System.out.printf("Sending PaintData to %s(%s)\n", getClientID(), getUsername());
             }
 
             if (message.type.equals(MessageType.CHAT_MESSAGE.toString())) {
-                for (ServerThread thatThread : ClientManager.getClients()) {
+
+                for (ServerThread thatThread : getStudio().getClientManager().getClients()) {
                     if (thatThread == this) continue;
                     System.out.printf("Sending PaintData to %s(%s)\n", thatThread.getClientID(), thatThread.getUsername());
                     thatThread.serverMessageService.sendChatMessage(getClientID(), getUsername(), message.message);
@@ -58,7 +60,7 @@ public class ServerThread extends Thread {
             if (message.type.equals(MessageType.PAINT_DATA.toString())) {
                 PaintData paintData = (PaintData) message.payload;
                 ServerData.paintBoard.setPixel(paintData.getCol(), paintData.getRow(), paintData.getColor());
-                for (ServerThread thatThread : ClientManager.getClients()) {
+                for (ServerThread thatThread : getStudio().getClientManager().getClients()) {
                     if (thatThread == this) continue;
                     System.out.printf("Sending PaintData to %s(%s)\n", thatThread.getClientID(), thatThread.getUsername());
                     thatThread.serverMessageService.sendPaintData(paintData.getCol(), paintData.getRow(), paintData.getColor());
@@ -69,7 +71,7 @@ public class ServerThread extends Thread {
                 ServerData.paintBoard.clear();
                 PaintBoard paintBoard = (PaintBoard) message.payload;
                 ServerData.paintBoard.setData(paintBoard.getData());
-                for (ServerThread thatThread : ClientManager.getClients()) {
+                for (ServerThread thatThread : getStudio().getClientManager().getClients()) {
                     if (thatThread == this) continue;
                     System.out.printf("Sending PAINT_BOARD to %s(%s)\n", thatThread.getClientID(), thatThread.getUsername());
                     thatThread.serverMessageService.sendPaintBoard(paintBoard);
@@ -78,7 +80,7 @@ public class ServerThread extends Thread {
 
             if (message.type.equals(MessageType.CLEAR_PAINT_BOARD.toString())) {
                 ServerData.paintBoard.clear();
-                for (ServerThread thatThread : ClientManager.getClients()) {
+                for (ServerThread thatThread : getStudio().getClientManager().getClients()) {
                     if (thatThread == this) continue;
                     System.out.printf("Sending CLEAR_PAINT_BOARD signal to %s(%s)\n", thatThread.getClientID(), thatThread.getUsername());
                     thatThread.serverMessageService.sendMessage(MessageType.CLEAR_PAINT_BOARD.toString(), "");
@@ -86,8 +88,34 @@ public class ServerThread extends Thread {
             }
 
             if (message.type.equals(MessageType.REQUEST_CLIENT_LIST.toString())) {
-                ArrayList<UserProfile> list = ClientManager.getUsers();
+                ArrayList<UserProfile> list = getStudio().getClientManager().getUsers();
                 serverMessageService.sendObject(MessageType.CLIENT_LIST.toString(), list);
+            }
+
+            if (message.type.equals(MessageType.REQUEST_STUDIO_LIST.toString())) {
+                ArrayList<Studio> list = ServerData.studioManager.getStudios();
+                serverMessageService.sendObject(MessageType.STUDIO_LIST.toString(), list);
+            }
+
+            if (message.type.equals(MessageType.CHOOSE_STUDIO.toString())) {
+                Studio studio = ServerData.studioManager.getStudio(message.message);
+                if (studio != null) {
+                    studio.getClientManager().addClient(this);
+                    userProfile.setStudio(studio);
+                    serverMessageService.sendMessage(MessageType.CONFIRM_STUDIO.toString());
+                }
+                serverMessageService.sendMessage(MessageType.REJECT_STUDIO.toString());
+            }
+
+            if (message.type.equals(MessageType.CREATE_STUDIO.toString())) {
+                Studio studio = ServerData.studioManager.getStudio(message.message);
+                if (studio == null) {
+                    studio = new Studio(message.message);
+                    studio.getClientManager().addClient(this);
+                    userProfile.setStudio(studio);
+                    serverMessageService.sendMessage(MessageType.CONFIRM_STUDIO.toString());
+                }
+                serverMessageService.sendMessage(MessageType.REJECT_STUDIO.toString());
             }
 
         }
@@ -95,7 +123,8 @@ public class ServerThread extends Thread {
         System.out.printf("Disconnected with client %s\n", getIpAddress());
         try {
             socket.close();
-            ClientManager.removeClient(this);
+            ServerData.globalClientManger.removeClient(this);
+            getStudio().getClientManager().removeClient(this);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -119,5 +148,9 @@ public class ServerThread extends Thread {
 
     public String getUsername() {
         return userProfile.username;
+    }
+
+    public Studio getStudio() {
+        return userProfile.getStudio();
     }
 }

@@ -1,4 +1,5 @@
 import model.constant.Constant;
+import model.server.ServerData;
 import service.server.ClientManager;
 import service.server.BroadcastServerThread;
 
@@ -19,7 +20,7 @@ public class PaintServer {
         while (true) {
             try {
                 Socket socket = serverSocket.accept();
-                ClientManager.addClient(socket);
+                ServerData.globalClientManger.addClient(socket);
             } catch (IOException e) {
                 System.out.println("I/O error: " + e);
             }
