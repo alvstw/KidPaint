@@ -3,6 +3,7 @@ package service.client;
 import helper.TCPHelper;
 import model.PaintBoard;
 import model.PaintData;
+import model.Studio;
 import model.UserProfile;
 import model.client.ClientData;
 import model.constant.Constant;
@@ -12,6 +13,7 @@ import model.message.Message;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ClientThread extends Thread {
@@ -54,16 +56,28 @@ public class ClientThread extends Thread {
             }
 
             if (message.type.equals(MessageType.CLIENT_LIST.toString())) {
-                ArrayList<UserProfile> userProfileList = new ArrayList<>();
+                ArrayList<String> usernameList = new ArrayList<>();
                 if (message.payload instanceof ArrayList<?>) {
                     List<?> objects = (List<?>) message.payload;
                     for(Object object : objects){
-                        UserProfile userProfile = (UserProfile) object;
-                        userProfileList.add(userProfile);
+                        String username = (String) object;
+                        usernameList.add(username);
                     }
                 }
-                ClientData.connectedUsers = userProfileList;
+                ClientData.connectedUsers = usernameList;
                 ClientData.ui.printOnlineUsers();
+            }
+
+            if (message.type.equals(MessageType.STUDIO_LIST.toString())) {
+                ArrayList<String> studios = new ArrayList<>();
+                if (message.payload instanceof ArrayList<?>) {
+                    java.util.List<?> objects = (List<?>) message.payload;
+                    for(Object object : objects){
+                        String studio = (String) object;
+                        studios.add(studio);
+                    }
+                    ClientData.studios = studios;
+                }
             }
         }
 

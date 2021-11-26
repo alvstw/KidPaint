@@ -3,6 +3,7 @@ import model.server.ServerData;
 import service.server.ClientManager;
 import service.server.BroadcastServerThread;
 
+import java.awt.*;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -15,6 +16,8 @@ public class PaintServer {
         // Accept UDP broadcast signal
         BroadcastServerThread broadcastServerThread = new BroadcastServerThread();
         broadcastServerThread.start();
+
+        ServerData.studioManager.createStudio(Constant.defaultStudioName);
 
         // Accept TCP connection
         while (true) {

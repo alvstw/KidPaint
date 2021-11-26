@@ -11,7 +11,6 @@ import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -384,9 +383,9 @@ public class UI extends JFrame {
 	public void printOnlineUsers() {
 		int userCount = 0;
 		StringBuilder stringBuilder = new StringBuilder();
-		for (UserProfile user : ClientData.connectedUsers) {
+		for (String username : ClientData.connectedUsers) {
 			if (userCount != 0) stringBuilder.append(" ,");
-			stringBuilder.append(user.username);
+			stringBuilder.append(username);
 			userCount++;
 		}
 		String userListString = stringBuilder.toString();

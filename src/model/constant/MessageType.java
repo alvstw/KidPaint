@@ -18,8 +18,6 @@ public enum MessageType {
 
     REQUEST_STUDIO_LIST,
     STUDIO_LIST,
-    CHOOSE_STUDIO,
-    CREATE_STUDIO,
+    SELECT_STUDIO,
     CONFIRM_STUDIO,
-    REJECT_STUDIO,
 }

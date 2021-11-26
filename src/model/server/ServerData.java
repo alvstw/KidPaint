@@ -5,7 +5,6 @@ import service.StudioManager;
 import service.server.ClientManager;
 
 public class ServerData {
-    public static PaintBoard paintBoard = new PaintBoard();
     public static final StudioManager studioManager = new StudioManager();
     public static final ClientManager globalClientManger = new ClientManager();
 }

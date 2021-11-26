@@ -1,5 +1,7 @@
 package model;
 
+import model.server.ServerData;
+
 import java.io.Serializable;
 
 public class UserProfile implements Serializable {
@@ -13,6 +15,9 @@ public class UserProfile implements Serializable {
     }
 
     public Studio getStudio() {
+        if (studio == null) {
+            return ServerData.studioManager.getOrCreateStudio("Default Studio");
+        }
         return studio;
     }
 }

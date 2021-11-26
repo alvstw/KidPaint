@@ -28,7 +28,7 @@ public class Test {
     public static void testSendChatMessage() throws IOException, InterruptedException {
         ClientService clientService = new ClientService();
         ClientMessageService clientMessageService = new ClientMessageService(clientService.getSocket());
-        clientService.setUsername("Paul");
+//        clientService.setUsername("Paul");
         clientService.findServer();
 //        clientMessageService.sendChatMessage("test");
     }

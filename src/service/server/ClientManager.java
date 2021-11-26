@@ -2,8 +2,10 @@ package service.server;
 
 import model.UserProfile;
 
+import java.io.Serializable;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class ClientManager {
     private ArrayList<ServerThread> clients = new ArrayList<>();

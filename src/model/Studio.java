@@ -2,13 +2,16 @@ package model;
 
 import service.server.ClientManager;
 
-public class Studio {
+import java.io.Serializable;
+
+public class Studio implements Serializable {
     String name = "";
     PaintBoard paintBoard;
     ClientManager clientManager;
 
     public Studio(String name) {
         this.name = name;
+        paintBoard = new PaintBoard();
         clientManager = new ClientManager();
     }
 

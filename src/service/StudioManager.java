@@ -5,7 +5,11 @@ import model.Studio;
 import java.util.ArrayList;
 
 public class StudioManager {
-    ArrayList<Studio> studios = new ArrayList<Studio>();
+    ArrayList<Studio> studios;
+
+    public StudioManager() {
+        studios = new ArrayList<>();
+    }
 
     public Studio createStudio(String name) {
         if (getStudio(name) == null) {
@@ -27,6 +31,12 @@ public class StudioManager {
             }
         }
         return null;
+    }
+
+    public Studio getOrCreateStudio(String name) {
+        Studio studio = getStudio(name);
+        if (studio != null) return studio;
+        return createStudio(name);
     }
 
     public ArrayList<Studio> getStudios() {
