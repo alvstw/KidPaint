@@ -1,15 +1,19 @@
 import model.ClientData;
+import service.ClientService;
 import window.UI;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.*;
+import java.io.IOException;
 import javax.swing.*;
 
 public class KidPaint extends JFrame implements ActionListener {
+    private static ClientService clientService;
     JTextField usernameField;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
+        clientService = new ClientService();
         new KidPaint();
     }
 
@@ -73,6 +77,13 @@ public class KidPaint extends JFrame implements ActionListener {
             JComponent component = (JComponent) e.getSource();
             Window window = SwingUtilities.getWindowAncestor(component);
             window.dispose();
+
+            // Establish connection
+            try {
+                clientService.findServer();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
 
             // Open paint board
             this.startPaintBoard();

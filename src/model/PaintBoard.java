@@ -1,5 +1,7 @@
 package model;
 
+import model.server.UserProfile;
+
 import java.util.Date;
 
 public class PaintBoard {

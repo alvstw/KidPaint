@@ -1,14 +1,9 @@
 package helper;
 
-import model.MessageData;
+import model.message.Message;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
+import java.net.*;
 
 public class UDPHelper {
     DatagramSocket socket;
@@ -17,73 +12,58 @@ public class UDPHelper {
         this.socket = socket;
     }
 
-    public MessageData receive() throws IOException {
-        DatagramPacket packet = new DatagramPacket(new byte[1024], 1024);
-        socket.receive(packet);
-
-        byte[] packetData = packet.getData();
-        MessageData messageData = new MessageData();
-
-        int messageTypeLength;
-        int messageContentLength;
-        byte[] messageTypeLengthBytes = new byte[4];
-        byte[] messageContentLengthBytes = new byte[4];
-        String messageType;
-        String messageContent;
-
-        // define segment location
-        int messageTypeLoc = 0;
-        int messageContentLoc;
-
-        // extract messageType
-        System.arraycopy(packetData, messageTypeLoc, messageTypeLengthBytes, 0, 4);
-        messageTypeLength = ByteBuffer.wrap(messageTypeLengthBytes).getInt();
-        byte[] messageTypeBytes = new byte[messageTypeLength];
-        System.arraycopy(packetData, messageTypeLoc + 4, messageTypeBytes, 0, messageTypeLength);
-        messageType = Arrays.toString(messageTypeBytes);
-
-        messageContentLoc = 4 + messageTypeLength;
-
-        // extract messageContent
-        System.arraycopy(packetData, messageContentLoc, messageContentLengthBytes, 0, 4);
-        messageContentLength = ByteBuffer.wrap(messageContentLengthBytes).getInt();
-        byte[] messageContentBytes = new byte[messageContentLength];
-        System.arraycopy(packetData, messageContentLoc + 4, messageContentBytes, 0, messageContentLength);
-        messageContent = Arrays.toString(messageContentBytes);
-
-        // prepare payload
-        messageData.type = messageType;
-        messageData.message = messageContent;
-        messageData.sourceIPAddress = packet.getAddress().toString();
-        messageData.sourcePort = packet.getPort();
-
-        return messageData;
+    public UDPHelper(int socketPort) {
+        try {
+            this.socket = new DatagramSocket(socketPort);
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void sendMessage(String messageType, String messageContent, String destIpAddress, int destPort) throws IOException {
-        InetAddress destination = InetAddress.getByName(destIpAddress);
+    public Message receive(){
+        DatagramPacket packet = new DatagramPacket(new byte[1024], 1024);
+        try {
+            socket.receive(packet);
+        } catch (IOException e) {
+            return null;
+        }
 
-        byte[] packetContent = new byte[1024];
+        byte[] packetData = packet.getData();
+        Message message = new Message();
+        message.decode(packetData);
+        message.sourceIPAddress = packet.getAddress().getHostAddress();
+        message.sourcePort = packet.getPort();
 
-        // convert segment length to bytes
-        byte[] messageTypeLengthBytes = ByteBuffer.allocate(4).putInt(messageType.length()).array();
-        byte[] messageContentLengthBytes = ByteBuffer.allocate(4).putInt(messageContent.length()).array();
+        return message;
+    }
 
-        // define segment location
-        int messageTypeSegmentLoc = 0;
-        int messageContentSegmentLoc = 4 + messageType.length();
+    public void sendMessage(String messageType, String messageContent, String destIpAddress, int destPort){
+        InetAddress destination = null;
+        try {
+            destination = InetAddress.getByName(destIpAddress);
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+            return;
+        }
 
-        // assign data into byte array
-        System.arraycopy(messageTypeLengthBytes, 0, packetContent, messageTypeSegmentLoc, 4);
-        System.arraycopy(messageType.getBytes(), 0, packetContent, messageTypeSegmentLoc + 4, messageType.length());
-        System.arraycopy(messageContentLengthBytes, 0, packetContent, messageContentSegmentLoc, 4);
-        System.arraycopy(messageContent.getBytes(), 0, packetContent, messageContentSegmentLoc + 4, messageContent.length());
+        Message message = new Message();
+        message.type = messageType;
+        message.message = messageContent;
+        byte[] packetContent = message.encode();
+        if (packetContent.length > 1024) {
+            System.out.println("UDP packet size is too large");
+            return;
+        }
 
         // create DatagramPacket
         DatagramPacket packet =
                 new DatagramPacket(packetContent, packetContent.length, destination, destPort);
 
-        socket.send(packet);
+        try {
+            socket.send(packet);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void end() {

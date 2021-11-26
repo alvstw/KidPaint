@@ -1,29 +1,28 @@
 package service;
 
-import helper.UDPHelper;
-import model.constant.Constant;
-import model.constant.MessageType;
-import model.MessageData;
+import service.thread.ServerThread;
 
-import java.io.IOException;
-import java.net.DatagramSocket;
+import java.net.Socket;
+import java.util.ArrayList;
 
 public class ServerService {
-    UDPHelper udpHelper;
+    private static ArrayList<ServerThread> clients = new ArrayList<>();
 
-    public ServerService() throws IOException {
-        DatagramSocket socket = new DatagramSocket(Constant.serverUDPPort);
-        udpHelper = new UDPHelper(socket);
+    public static synchronized void addClient(ServerThread serverThread) {
+        clients.add(serverThread);
+        serverThread.start();
     }
 
-    public void connectClient() throws IOException, InterruptedException {
-        while (true) {
-            MessageData messageData = udpHelper.receive();
-            if (messageData.message.equals(MessageType.FIND_SERVER_BROADCAST.toString())) {
-                udpHelper.sendMessage(MessageType.SERVER_BROADCAST_RESPONSE.toString(), "", messageData.sourceIPAddress, messageData.sourcePort);
-            }
-            Thread.sleep(1000);
+    public static synchronized void addClient(Socket socket) {
+        ServerThread serverThread = new ServerThread(socket);
+        ServerService.addClient(serverThread);
+    }
 
-        }
+    public static synchronized void removeClient(ServerThread serverThread) {
+        clients.remove(serverThread);
+    }
+
+    public static synchronized ArrayList<ServerThread> getClients() {
+        return clients;
     }
 }
